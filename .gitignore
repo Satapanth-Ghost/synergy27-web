@@ -1,0 +1,12 @@
+# Operating-system and editor clutter
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Never commit local settings or dependency folders
+.env
+.env.*
+node_modules/
+
+# Temporary exports and recordings
+*.log

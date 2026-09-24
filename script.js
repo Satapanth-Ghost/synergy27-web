@@ -7,13 +7,8 @@ const ctx = canvas.getContext('2d');
 let particles = [];
 const lowPowerDevice = (navigator.deviceMemory && navigator.deviceMemory <= 4)
   || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
-const useMobileAssets = window.matchMedia('(max-width: 900px)').matches || lowPowerDevice || navigator.connection?.saveData;
-if (useMobileAssets) {
-  document.querySelectorAll('video').forEach((video) => {
-    const mobileSource = video.querySelector('source[media]')?.getAttribute('src');
-    if (mobileSource) { video.src = mobileSource; video.load(); }
-  });
-}
+// Use the browser-compatible videos on every device. Low-power performance is
+// still handled below by pausing off-screen work and reducing canvas cost.
 
 let introReady = false;
 let entryStarted = false;

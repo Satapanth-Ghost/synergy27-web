@@ -312,3 +312,82 @@ if (gravityCanvas && about && outro) {
   addEventListener('scroll', gravityProgress, { passive: true });
   fitGravityCanvas(); gravityProgress(); drawGravityJourney(0);
 }
+
+// Presentation-only attendee portal. It intentionally stores no attendee data and makes no real payment.
+const portal = document.querySelector('#portal');
+const portalShell = portal?.querySelector('.portal-shell');
+const portalTabs = document.querySelectorAll('[data-demo-tab]');
+const portalPanels = document.querySelectorAll('[data-demo-panel]');
+const registrationForm = document.querySelector('#demo-registration');
+const ticketForm = document.querySelector('#demo-ticket-form');
+const ticketResult = document.querySelector('#ticket-result');
+const checkinResult = document.querySelector('#checkin-result');
+let demoAttendee = 'Demo Attendee';
+let demoPass = 'All-Access Pass';
+
+function showPortalTab(name) {
+  if (!portal) return;
+  portalPanels.forEach((panel) => panel.classList.toggle('active', panel.dataset.demoPanel === name));
+  portalTabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.demoTab === name));
+  portalShell?.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openPortal(start = 'register') {
+  if (!portal) return;
+  portal.classList.add('open');
+  portal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  showPortalTab(start);
+  const rect = portalShell?.getBoundingClientRect();
+  if (rect) burst(rect.left + rect.width / 2, rect.top + 30);
+  setTimeout(() => portal.querySelector('input, button')?.focus(), 150);
+}
+
+function closePortal() {
+  if (!portal) return;
+  portal.classList.remove('open');
+  portal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('[data-demo-open]').forEach((button) => button.addEventListener('click', (event) => { event.preventDefault(); openPortal(button.dataset.demoOpen); }));
+document.querySelectorAll('[data-demo-close]').forEach((button) => button.addEventListener('click', closePortal));
+portalTabs.forEach((tab) => tab.addEventListener('click', () => showPortalTab(tab.dataset.demoTab)));
+document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && portal?.classList.contains('open')) closePortal(); });
+
+registrationForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const data = new FormData(registrationForm);
+  demoAttendee = String(data.get('name') || 'Demo Attendee').trim() || 'Demo Attendee';
+  demoPass = String(data.get('pass') || 'All-Access Pass').split('—')[0].trim();
+  document.querySelector('#payment-name').textContent = demoAttendee.toUpperCase();
+  document.querySelector('#payment-pass').textContent = demoPass.toUpperCase();
+  burst(innerWidth / 2, innerHeight / 2);
+  showPortalTab('payment');
+});
+
+document.querySelector('#demo-pay')?.addEventListener('click', () => {
+  const button = document.querySelector('#demo-pay');
+  button.textContent = 'VERIFYING DEMO PAYMENT...';
+  portalShell?.classList.add('shake');
+  setTimeout(() => {
+    button.innerHTML = 'PAY ₹499 <span>↗</span>';
+    portalShell?.classList.remove('shake');
+    document.querySelector('#demo-ticket-code').textContent = 'SYN27-DEMO';
+    burst(innerWidth / 2, innerHeight / 2);
+    showPortalTab('success');
+  }, 700);
+});
+
+ticketForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  ticketResult.hidden = false;
+  document.querySelector('#ticket-owner').textContent = `${demoAttendee} · ${demoPass}`;
+  burst(innerWidth / 2, innerHeight * .68);
+});
+
+document.querySelector('#demo-scan')?.addEventListener('click', () => {
+  checkinResult.hidden = false;
+  document.querySelector('#demo-scan').innerHTML = 'TICKET VERIFIED <span>✓</span>';
+  burst(innerWidth / 2, innerHeight * .7);
+});

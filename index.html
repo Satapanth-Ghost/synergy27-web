@@ -83,6 +83,7 @@
         <a href="#schedule" data-target="schedule">Schedule</a>
         <a href="#events" data-target="events">Events</a>
         <a href="#logistics" data-target="logistics">Info</a>
+        <a href="#portal" data-demo-open="portal">Portal</a>
         <a href="#contact" data-target="contact">Contact</a>
       </nav>
     </header>
@@ -96,7 +97,7 @@
           <p class="eyebrow">THE ANNUAL MECHANICAL SYMPOSIUM</p>
           <h1 id="hero-title">SYNERGY <span>2027</span></h1>
           <p class="hero-tagline">Where raw ideas become engineered impact.</p>
-          <div class="hero-actions"><a class="cta cta-register" href="https://docs.google.com/forms/d/e/1FAIpQLSfOgEudQmpD6Nc6tGoWEPTsEbbpgcnb9niofNvmH1kYc7l15Q/viewform?usp=publish-editor" target="_blank" rel="noreferrer">REGISTER NOW <b>↗</b></a><a class="cta blast-link" href="#about" data-target="about">EXPLORE THE FEST <b>↓</b></a></div>
+          <div class="hero-actions"><button class="cta cta-register portal-launch" type="button" data-demo-open="register">REGISTER / PORTAL <b>↗</b></button><a class="cta blast-link" href="#about" data-target="about">EXPLORE THE FEST <b>↓</b></a></div>
         </div>
         <div class="hero-spec"><span>03 DAYS</span><span>2K+ ATTENDEES</span><span>ALL INDIA</span></div>
         <div class="orbital-ring" aria-hidden="true"></div>
@@ -172,6 +173,52 @@
       <div class="footer-links"><a href="mailto:mech.nitt.dev@gmail.com"><span class="footer-icon" aria-hidden="true">✉</span>mech.nitt.dev@gmail.com</a><a href="tel:+918807271377"><span class="footer-icon" aria-hidden="true">⌕</span>+91 8807271377</a><a href="https://www.instagram.com/synergynitt/" target="_blank" rel="noreferrer"><span class="footer-icon instagram" aria-hidden="true">◎</span>INSTAGRAM ↗</a><a href="https://www.linkedin.com/company/synergy-nit-trichy/" target="_blank" rel="noreferrer"><span class="footer-icon linkedin" aria-hidden="true">in</span>LINKEDIN ↗</a><a href="https://synergy.nitt.edu/terms-and-conditions" target="_blank" rel="noreferrer"><span class="footer-icon" aria-hidden="true">▤</span>TERMS</a><a href="https://synergy.nitt.edu/privacy-policy" target="_blank" rel="noreferrer"><span class="footer-icon" aria-hidden="true">◈</span>PRIVACY</a></div>
       <p class="copyright">© MEA NIT TRICHY · SYNERGY 2027</p>
     </footer>
+
+    <div class="portal-modal" id="portal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="portal-title">
+      <div class="portal-backdrop" data-demo-close></div>
+      <section class="portal-shell">
+        <button class="portal-close" type="button" aria-label="Close portal" data-demo-close>×</button>
+        <div class="portal-head"><p class="eyebrow">SYNERGY 27 / COMMAND CENTRE</p><h2 id="portal-title">Your fest.<br><em>One portal.</em></h2><p>Interactive presentation demo — no information is saved and no payment is processed.</p></div>
+        <div class="portal-tabs" role="tablist"><button class="active" type="button" data-demo-tab="register">REGISTER</button><button type="button" data-demo-tab="ticket">TICKET STATUS</button><button type="button" data-demo-tab="admin">ADMIN CHECK-IN</button></div>
+
+        <div class="portal-panel active" data-demo-panel="register">
+          <div class="portal-step"><span>01</span><p>ATTENDEE DETAILS</p><i>DEMO FLOW</i></div>
+          <form id="demo-registration" class="portal-form">
+            <label>FULL NAME<input required name="name" placeholder="Enter attendee name" autocomplete="name"></label>
+            <label>EMAIL ADDRESS<input required name="email" type="email" placeholder="name@email.com" autocomplete="email"></label>
+            <label>PASS TYPE<select name="pass"><option>Synergy All-Access Pass — ₹499</option><option>Workshop Pass — ₹199</option><option>Event Pass — ₹99</option></select></label>
+            <button class="portal-action" type="submit">CONTINUE TO PAYMENT <span>→</span></button>
+          </form>
+        </div>
+
+        <div class="portal-panel" data-demo-panel="payment">
+          <div class="portal-step"><span>02</span><p>SECURE PAYMENT</p><i>SIMULATION</i></div>
+          <div class="payment-card"><div><small>SYNERGY 27 PASS</small><strong id="payment-name">ATTENDEE</strong><span id="payment-pass">ALL-ACCESS PASS</span></div><b>₹499</b></div>
+          <p class="demo-note">This is a presentation payment screen. The final website will use official 2027 Razorpay credentials.</p>
+          <button class="portal-action hot" id="demo-pay" type="button">PAY ₹499 <span>↗</span></button>
+          <button class="text-demo-button" type="button" data-demo-tab="register">← EDIT REGISTRATION</button>
+        </div>
+
+        <div class="portal-panel" data-demo-panel="success">
+          <div class="success-mark">✓</div><p class="eyebrow">MISSION CONFIRMED</p><h3>YOU’RE IN.</h3><p>Your demo pass is ready. Ticket ID <strong id="demo-ticket-code">SYN27-DEMO</strong></p>
+          <div class="ticket-visual"><span>SYNERGY 27</span><strong>ALL ACCESS</strong><small>DEMO ATTENDEE · NIT TRICHY</small><b>◫</b></div>
+          <button class="portal-action" type="button" data-demo-tab="ticket">TRACK TICKET <span>→</span></button>
+        </div>
+
+        <div class="portal-panel" data-demo-panel="ticket">
+          <div class="portal-step"><span>◫</span><p>TICKET STATUS</p><i>LIVE UI DEMO</i></div>
+          <form id="demo-ticket-form" class="portal-form ticket-form"><label>TICKET ID<input required id="ticket-query" placeholder="Try SYN27-DEMO" value="SYN27-DEMO"></label><button class="portal-action" type="submit">FIND MY PASS <span>→</span></button></form>
+          <div class="ticket-result" id="ticket-result" hidden><span class="status-dot"></span><div><small>STATUS</small><strong>CONFIRMED · READY FOR CHECK-IN</strong><p id="ticket-owner">Demo Attendee · All-Access Pass</p></div></div>
+        </div>
+
+        <div class="portal-panel" data-demo-panel="admin">
+          <div class="portal-step"><span>03</span><p>PR DESK CHECK-IN</p><i>STAFF DEMO</i></div>
+          <div class="scanner"><div class="scan-line"></div><span>◫</span><p>SCAN TICKET QR</p></div>
+          <button class="portal-action" id="demo-scan" type="button">SIMULATE SCAN <span>⌁</span></button>
+          <div class="checkin-result" id="checkin-result" hidden><b>✓ CHECK-IN COMPLETE</b><span>DEMO ATTENDEE · ALL-ACCESS PASS · BARN HALL</span></div>
+        </div>
+      </section>
+    </div>
     <script src="script.js"></script>
   </body>
 </html>

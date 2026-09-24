@@ -5,6 +5,15 @@ const welcomeVideo = document.querySelector('#welcome-video');
 const canvas = document.querySelector('#blast-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
+const lowPowerDevice = (navigator.deviceMemory && navigator.deviceMemory <= 4)
+  || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+const useMobileAssets = window.matchMedia('(max-width: 900px)').matches || lowPowerDevice || navigator.connection?.saveData;
+if (useMobileAssets) {
+  document.querySelectorAll('video').forEach((video) => {
+    const mobileSource = video.querySelector('source[media]')?.getAttribute('src');
+    if (mobileSource) { video.src = mobileSource; video.load(); }
+  });
+}
 
 let introReady = false;
 let entryStarted = false;
@@ -31,10 +40,10 @@ menu.addEventListener('click', () => {
   menu.setAttribute('aria-expanded', open);
 });
 
-function fitCanvas() { canvas.width = innerWidth * devicePixelRatio; canvas.height = innerHeight * devicePixelRatio; ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0); }
+function fitCanvas() { const ratio = lowPowerDevice ? 1 : Math.min(devicePixelRatio || 1, 2); canvas.width = innerWidth * ratio; canvas.height = innerHeight * ratio; ctx.setTransform(ratio, 0, 0, ratio, 0, 0); }
 fitCanvas(); addEventListener('resize', fitCanvas);
 function burst(x, y) {
-  particles = Array.from({ length: 105 }, () => {
+  particles = Array.from({ length: lowPowerDevice ? 58 : 105 }, () => {
     const a = Math.random() * Math.PI * 2, speed = 2 + Math.random() * 10;
     return { x, y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, life: 1, size: 1 + Math.random() * 3, hue: Math.random() > .22 ? 73 : 15 };
   });
@@ -98,10 +107,15 @@ if (about && blackholeCanvas) {
   const pointer = { x: 0, y: 0, active: false, last: 0 };
   let blackholeVisible = false;
   let blackholeSize = { width: 0, height: 0 };
+  let blackholeFrameQueued = false;
+
+  function requestBlackholeFrame() {
+    if (!blackholeFrameQueued) { blackholeFrameQueued = true; requestAnimationFrame(drawBlackhole); }
+  }
 
   function resizeBlackhole() {
     const rect = about.getBoundingClientRect();
-    const ratio = Math.min(devicePixelRatio || 1, 2);
+    const ratio = lowPowerDevice ? 1 : Math.min(devicePixelRatio || 1, 2);
     blackholeSize = { width: rect.width, height: rect.height };
     blackholeCanvas.width = Math.max(1, Math.floor(rect.width * ratio));
     blackholeCanvas.height = Math.max(1, Math.floor(rect.height * ratio));
@@ -130,6 +144,7 @@ if (about && blackholeCanvas) {
   }
 
   function drawBlackhole() {
+    blackholeFrameQueued = false;
     if (blackholeVisible) {
       const { width, height } = blackholeSize;
       const core = gravityCenter();
@@ -165,7 +180,7 @@ if (about && blackholeCanvas) {
         blackholeCtx.lineWidth = star.size; blackholeCtx.stroke();
       }
     }
-    requestAnimationFrame(drawBlackhole);
+    if (blackholeVisible && (stars.length || pointer.active)) requestBlackholeFrame();
   }
 
   about.addEventListener('pointermove', (event) => {
@@ -173,12 +188,14 @@ if (about && blackholeCanvas) {
     pointer.x = event.clientX - rect.left; pointer.y = event.clientY - rect.top; pointer.active = true;
     const now = performance.now();
     if (now - pointer.last > 28) { releaseStar(pointer.x, pointer.y); pointer.last = now; }
+    requestBlackholeFrame();
   });
-  about.addEventListener('pointerleave', () => { pointer.active = false; });
+  about.addEventListener('pointerleave', () => { pointer.active = false; requestBlackholeFrame(); });
   new ResizeObserver(resizeBlackhole).observe(about);
-  new IntersectionObserver(([entry]) => { blackholeVisible = entry.isIntersecting; }, { threshold: .03 }).observe(about);
+  new IntersectionObserver(([entry]) => { blackholeVisible = entry.isIntersecting; if (blackholeVisible) requestBlackholeFrame(); }, { threshold: .03 }).observe(about);
+  addEventListener('scroll', () => { if (blackholeVisible) requestBlackholeFrame(); }, { passive: true });
   resizeBlackhole();
-  drawBlackhole();
+  requestBlackholeFrame();
 }
 
 // Cinematic gravity journey: starts with the About slide and follows the visitor to the outro.
@@ -192,9 +209,14 @@ if (gravityCanvas && about && outro) {
   const cursor = { x: innerWidth * .7, y: innerHeight * .5, lastX: 0, lastY: 0, lastTime: 0, seen: false };
   let journeyProgress = 0;
   let journeyOnScreen = false;
+  let gravityFrameQueued = false;
+
+  function requestGravityFrame() {
+    if (!gravityFrameQueued) { gravityFrameQueued = true; requestAnimationFrame(drawGravityJourney); }
+  }
 
   function fitGravityCanvas() {
-    const ratio = Math.min(devicePixelRatio || 1, 2);
+    const ratio = lowPowerDevice ? 1 : Math.min(devicePixelRatio || 1, 2);
     gravityCanvas.width = Math.floor(innerWidth * ratio);
     gravityCanvas.height = Math.floor(innerHeight * ratio);
     gravityCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -221,6 +243,8 @@ if (gravityCanvas && about && outro) {
       finalTitle.style.opacity = (1 - swallow).toFixed(3);
     }
     if (journeyOnScreen && gravityVideo) gravityVideo.play().catch(() => {});
+    if (!journeyOnScreen && gravityVideo) gravityVideo.pause();
+    if (journeyOnScreen) requestGravityFrame();
   }
 
   function corePosition() {
@@ -236,6 +260,7 @@ if (gravityCanvas && about && outro) {
   }
 
   function drawGravityJourney(now) {
+    gravityFrameQueued = false;
     gravityCtx.clearRect(0, 0, innerWidth, innerHeight);
     if (journeyOnScreen) {
       const core = corePosition();
@@ -295,7 +320,7 @@ if (gravityCanvas && about && outro) {
         gravityCtx.fillStyle = '#fffdf0'; gravityCtx.beginPath(); gravityCtx.arc(cursor.x, cursor.y, radius, 0, Math.PI * 2); gravityCtx.fill();
       }
     }
-    requestAnimationFrame(drawGravityJourney);
+    if (journeyOnScreen) requestGravityFrame();
   }
 
   addEventListener('pointermove', (event) => {
@@ -307,10 +332,11 @@ if (gravityCanvas && about && outro) {
       if (lightTrail.length > 34) lightTrail.splice(0, lightTrail.length - 34);
     }
     cursor.x = event.clientX; cursor.y = event.clientY; cursor.lastX = event.clientX; cursor.lastY = event.clientY; cursor.lastTime = now; cursor.seen = true;
+    if (journeyOnScreen) requestGravityFrame();
   }, { passive: true });
   addEventListener('resize', () => { fitGravityCanvas(); gravityProgress(); }, { passive: true });
   addEventListener('scroll', gravityProgress, { passive: true });
-  fitGravityCanvas(); gravityProgress(); drawGravityJourney(0);
+  fitGravityCanvas(); gravityProgress();
 }
 
 // Presentation-only attendee portal. It intentionally stores no attendee data and makes no real payment.
